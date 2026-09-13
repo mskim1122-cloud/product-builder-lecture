@@ -19,6 +19,17 @@
     --red: #ff7272;
     --gray: #aaaaaa;
     --green: #b0d840;
+    color-scheme: dark;
+  }
+
+  html[data-theme="light"] {
+    --bg-1: #f4f5fb;
+    --bg-2: #e7e9fb;
+    --card-bg: rgba(0, 0, 0, 0.035);
+    --card-border: rgba(0, 0, 0, 0.1);
+    --text-main: #1c1d33;
+    --text-sub: #5c5e80;
+    color-scheme: light;
   }
 
   * { box-sizing: border-box; }
@@ -32,7 +43,28 @@
     display: flex;
     justify-content: center;
     padding: 40px 16px 80px;
+    transition: background 0.25s ease, color 0.25s ease;
   }
+
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-main);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    z-index: 10;
+  }
+  .theme-toggle:hover { border-color: var(--text-main); }
 
   .wrap {
     width: 100%;
@@ -262,6 +294,7 @@
 </style>
 </head>
 <body>
+  <button class="theme-toggle" id="themeToggle" aria-label="테마 전환" title="다크/화이트 모드 전환">🌙</button>
   <div class="wrap">
     <header>
       <h1>🎱 로또 번호 추천</h1>
@@ -314,8 +347,34 @@
   const gameCountEl = document.getElementById('gameCount');
   const excludeInputEl = document.getElementById('excludeInput');
   const clearBtn = document.getElementById('clearBtn');
+  const themeToggle = document.getElementById('themeToggle');
 
   const STORAGE_KEY = 'lotto-history-v1';
+  const THEME_KEY = 'lotto-theme-v1';
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggle.textContent = theme === 'light' ? '☀️' : '🌙';
+  }
+
+  function initTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark') {
+      applyTheme(saved);
+      return;
+    }
+    const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+    applyTheme(prefersLight ? 'light' : 'dark');
+  }
+
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem(THEME_KEY, next);
+  });
+
+  initTheme();
 
   function colorClass(n) {
     if (n <= 10) return 'y';
